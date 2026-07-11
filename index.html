@@ -167,8 +167,8 @@
             <input type="text" id="timePoint" placeholder="如：2026.8">
         </div>
         <div class="form-group">
-            <label>应力波速 (m/s)</label>
-            <input type="number" id="waveSpeed" placeholder="如：4100">
+            <label>应力波速 (km/s)</label>
+            <input type="number" id="waveSpeed" placeholder="如：4.1" step="0.001">
         </div>
         <div class="form-group">
             <label>含水率 (%)</label>
@@ -189,7 +189,7 @@
         const OWNER = 'SaveDemon';
         const REPO = 'smart-building-data';
         const FILE_PATH = 'data.json';
-        const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
+        const API_URL = 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents/' + FILE_PATH;
 
         // Token 管理
         function getToken() {
@@ -197,8 +197,8 @@
         }
 
         function saveToken() {
-            const token = document.getElementById('tokenInput').value.trim();
-            if (token && token.startsWith('ghp_')) {
+            var token = document.getElementById('tokenInput').value.trim();
+            if (token && token.indexOf('ghp_') === 0) {
                 localStorage.setItem('github_token', token);
                 showTokenSaved();
             } else {
@@ -222,44 +222,58 @@
             showTokenSaved();
         }
 
-        // 加载当前数据预览
-        async function loadPreview() {
-            try {
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                const content = JSON.parse(atob(data.content));
-
-                let table = '<table><tr><th></th>';
-                content.xAxisData.forEach(x => { table += '<th>' + x + '</th>'; });
-                table += '</tr>';
-
-                content.chartData.forEach(series => {
-                    table += '<tr><td style="color:#aaa;text-align:left">' + series.name + '</td>';
-                    series.data.forEach(v => { table += '<td>' + v + '</td>'; });
-                    table += '</tr>';
-                });
-                table += '</table>';
-
-                document.getElementById('previewContent').innerHTML = table;
-            } catch (e) {
-                document.getElementById('previewContent').textContent = '加载失败: ' + e.message;
+        // UTF-8 安全的 base64 解码
+        function utf8Decode(base64Str) {
+            var raw = atob(base64Str);
+            var bytes = [];
+            for (var i = 0; i < raw.length; i++) {
+                bytes.push(raw.charCodeAt(i));
             }
+            return decodeURIComponent(escape(String.fromCharCode.apply(null, bytes)));
         }
 
+        // 加载当前数据预览
+        fetch(API_URL).then(function(res) {
+            return res.json();
+        }).then(function(data) {
+            var jsonStr = utf8Decode(data.content);
+            var content = JSON.parse(jsonStr);
+
+            var html = '<table><tr><th></th>';
+            for (var i = 0; i < content.xAxisData.length; i++) {
+                html += '<th>' + content.xAxisData[i] + '</th>';
+            }
+            html += '</tr>';
+
+            for (var s = 0; s < content.chartData.length; s++) {
+                var series = content.chartData[s];
+                html += '<tr><td style="color:#aaa;text-align:left">' + series.name + '</td>';
+                for (var d = 0; d < series.data.length; d++) {
+                    html += '<td>' + series.data[d] + '</td>';
+                }
+                html += '</tr>';
+            }
+            html += '</table>';
+
+            document.getElementById('previewContent').innerHTML = html;
+        }).catch(function(e) {
+            document.getElementById('previewContent').textContent = '加载失败';
+        });
+
         // 提交新数据
-        async function submitData() {
-            const token = getToken();
+        function submitData() {
+            var token = getToken();
             if (!token) {
                 resetToken();
                 alert('请先填写 GitHub Token');
                 return;
             }
 
-            const timePoint = document.getElementById('timePoint').value.trim();
-            const waveSpeed = parseFloat(document.getElementById('waveSpeed').value);
-            const moisture = parseFloat(document.getElementById('moisture').value);
-            const statusEl = document.getElementById('status');
-            const btn = document.getElementById('submitBtn');
+            var timePoint = document.getElementById('timePoint').value.trim();
+            var waveSpeed = parseFloat(document.getElementById('waveSpeed').value);
+            var moisture = parseFloat(document.getElementById('moisture').value);
+            var statusEl = document.getElementById('status');
+            var btn = document.getElementById('submitBtn');
 
             if (!timePoint || isNaN(waveSpeed) || isNaN(moisture)) {
                 statusEl.className = 'status error';
@@ -271,19 +285,21 @@
             statusEl.className = 'status loading';
             statusEl.textContent = '⏳ 正在读取并更新数据...';
 
-            try {
-                const res = await fetch(API_URL);
-                const fileInfo = await res.json();
-                const currentContent = JSON.parse(atob(fileInfo.content));
-                const sha = fileInfo.sha;
+            fetch(API_URL).then(function(res) {
+                return res.json();
+            }).then(function(fileInfo) {
+                var jsonStr = utf8Decode(fileInfo.content);
+                var currentContent = JSON.parse(jsonStr);
+                var sha = fileInfo.sha;
 
                 currentContent.xAxisData.push(timePoint);
                 currentContent.chartData[0].data.push(waveSpeed);
                 currentContent.chartData[1].data.push(moisture);
 
-                const newContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2))));
+                var newJson = JSON.stringify(currentContent, null, 2);
+                var newContent = btoa(unescape(encodeURIComponent(newJson)));
 
-                const updateRes = await fetch(API_URL, {
+                return fetch(API_URL, {
                     method: 'PUT',
                     headers: {
                         'Authorization': 'token ' + token,
@@ -295,28 +311,26 @@
                         sha: sha
                     })
                 });
-
+            }).then(function(updateRes) {
                 if (updateRes.ok) {
                     statusEl.className = 'status success';
                     statusEl.textContent = '✅ 更新成功！大屏将在几秒内刷新';
                     document.getElementById('timePoint').value = '';
                     document.getElementById('waveSpeed').value = '';
                     document.getElementById('moisture').value = '';
-                    setTimeout(loadPreview, 2000);
+                    setTimeout(function() { location.reload(); }, 2000);
                 } else {
-                    const err = await updateRes.json();
-                    statusEl.className = 'status error';
-                    statusEl.textContent = '❌ 更新失败: ' + (err.message || '未知错误');
+                    return updateRes.json().then(function(err) {
+                        throw new Error(err.message || '未知错误');
+                    });
                 }
-            } catch (e) {
+            }).catch(function(e) {
                 statusEl.className = 'status error';
                 statusEl.textContent = '❌ 错误: ' + e.message;
-            }
-
-            btn.disabled = false;
+            }).finally(function() {
+                btn.disabled = false;
+            });
         }
-
-        loadPreview();
     </script>
 </body>
 </html>
