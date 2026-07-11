@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应力波数据管理 - 智能建造竞赛</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0d1b2a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+        }
+        .container {
+            background: rgba(20, 25, 50, 0.9);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            width: 420px;
+            box-shadow: 0 0 40px rgba(0, 150, 255, 0.1);
+        }
+        h1 {
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #64c8ff;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: rgba(100, 200, 255, 0.6);
+        }
+        input::placeholder { color: #555; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1e88e5, #42a5f5);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #1565c0, #1e88e5);
+            box-shadow: 0 4px 20px rgba(30, 136, 229, 0.4);
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .status.success {
+            display: block;
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            color: #81c784;
+        }
+        .status.error {
+            display: block;
+            background: rgba(244, 67, 54, 0.15);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+            color: #e57373;
+        }
+        .status.loading {
+            display: block;
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            color: #ffd54f;
+        }
+        .data-preview {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(100, 200, 255, 0.1);
+            border-radius: 8px;
+        }
+        .data-preview h3 {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .data-preview table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        .data-preview th, .data-preview td {
+            padding: 6px 8px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .data-preview th { color: #64c8ff; font-weight: 500; }
+        .token-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(255, 200, 0, 0.05);
+            border: 1px solid rgba(255, 200, 0, 0.2);
+            border-radius: 8px;
+        }
+        .token-section p {
+            font-size: 12px;
+            color: #888;
+            margin-top: 6px;
+        }
+        .token-saved {
+            color: #81c784;
+            font-size: 13px;
+            text-align: center;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 应力波数据管理</h1>
+        <p class="subtitle">填写检测数据 → 自动更新大屏展示</p>
+
+        <!-- Token 配置区 -->
+        <div class="token-section" id="tokenSection">
+            <label>🔑 GitHub Token（首次使用需填写）</label>
+            <input type="password" id="tokenInput" placeholder="粘贴你的 ghp_ 开头的 Token">
+            <button class="btn" style="background:linear-gradient(135deg,#f9a825,#ffb300);margin-top:10px" onclick="saveToken()">保存 Token</button>
+            <p>Token 仅保存在你的浏览器本地，不会上传到任何地方</p>
+        </div>
+        <div class="token-saved" id="tokenSaved" style="display:none">
+            ✅ Token 已保存 | <a href="#" onclick="resetToken()" style="color:#e57373;font-size:12px">更换</a>
+        </div>
+
+        <div class="form-group">
+            <label>检测时间</label>
+            <input type="text" id="timePoint" placeholder="如：2026.8">
+        </div>
+        <div class="form-group">
+            <label>应力波速 (m/s)</label>
+            <input type="number" id="waveSpeed" placeholder="如：4100">
+        </div>
+        <div class="form-group">
+            <label>含水率 (%)</label>
+            <input type="number" id="moisture" placeholder="如：15.2" step="0.1">
+        </div>
+
+        <button class="btn" id="submitBtn" onclick="submitData()">提交并更新大屏</button>
+
+        <div class="status" id="status"></div>
+
+        <div class="data-preview" id="preview">
+            <h3>当前数据预览</h3>
+            <div id="previewContent">加载中...</div>
+        </div>
+    </div>
+
+    <script>
+        const OWNER = 'SaveDemon';
+        const REPO = 'smart-building-data';
+        const FILE_PATH = 'data.json';
+        const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`;
+
+        // Token 管理
+        function getToken() {
+            return localStorage.getItem('github_token');
+        }
+
+        function saveToken() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (token && token.startsWith('ghp_')) {
+                localStorage.setItem('github_token', token);
+                showTokenSaved();
+            } else {
+                alert('请输入有效的 GitHub Token（以 ghp_ 开头）');
+            }
+        }
+
+        function resetToken() {
+            localStorage.removeItem('github_token');
+            document.getElementById('tokenSection').style.display = 'block';
+            document.getElementById('tokenSaved').style.display = 'none';
+        }
+
+        function showTokenSaved() {
+            document.getElementById('tokenSection').style.display = 'none';
+            document.getElementById('tokenSaved').style.display = 'block';
+        }
+
+        // 页面加载检查
+        if (getToken()) {
+            showTokenSaved();
+        }
+
+        // 加载当前数据预览
+        async function loadPreview() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                const content = JSON.parse(atob(data.content));
+
+                let table = '<table><tr><th></th>';
+                content.xAxisData.forEach(x => { table += '<th>' + x + '</th>'; });
+                table += '</tr>';
+
+                content.chartData.forEach(series => {
+                    table += '<tr><td style="color:#aaa;text-align:left">' + series.name + '</td>';
+                    series.data.forEach(v => { table += '<td>' + v + '</td>'; });
+                    table += '</tr>';
+                });
+                table += '</table>';
+
+                document.getElementById('previewContent').innerHTML = table;
+            } catch (e) {
+                document.getElementById('previewContent').textContent = '加载失败: ' + e.message;
+            }
+        }
+
+        // 提交新数据
+        async function submitData() {
+            const token = getToken();
+            if (!token) {
+                resetToken();
+                alert('请先填写 GitHub Token');
+                return;
+            }
+
+            const timePoint = document.getElementById('timePoint').value.trim();
+            const waveSpeed = parseFloat(document.getElementById('waveSpeed').value);
+            const moisture = parseFloat(document.getElementById('moisture').value);
+            const statusEl = document.getElementById('status');
+            const btn = document.getElementById('submitBtn');
+
+            if (!timePoint || isNaN(waveSpeed) || isNaN(moisture)) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 请填写完整信息';
+                return;
+            }
+
+            btn.disabled = true;
+            statusEl.className = 'status loading';
+            statusEl.textContent = '⏳ 正在读取并更新数据...';
+
+            try {
+                const res = await fetch(API_URL);
+                const fileInfo = await res.json();
+                const currentContent = JSON.parse(atob(fileInfo.content));
+                const sha = fileInfo.sha;
+
+                currentContent.xAxisData.push(timePoint);
+                currentContent.chartData[0].data.push(waveSpeed);
+                currentContent.chartData[1].data.push(moisture);
+
+                const newContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2))));
+
+                const updateRes = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'token ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: '更新检测数据: ' + timePoint,
+                        content: newContent,
+                        sha: sha
+                    })
+                });
+
+                if (updateRes.ok) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✅ 更新成功！大屏将在几秒内刷新';
+                    document.getElementById('timePoint').value = '';
+                    document.getElementById('waveSpeed').value = '';
+                    document.getElementById('moisture').value = '';
+                    setTimeout(loadPreview, 2000);
+                } else {
+                    const err = await updateRes.json();
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '❌ 更新失败: ' + (err.message || '未知错误');
+                }
+            } catch (e) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ 错误: ' + e.message;
+            }
+
+            btn.disabled = false;
+        }
+
+        loadPreview();
+    </script>
+</body>
+</html>
