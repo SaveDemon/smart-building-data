@@ -1,336 +1,600 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>应力波数据管理 - 智能建造竞赛</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0d1b2a 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #e0e0e0;
-        }
-        .container {
-            background: rgba(20, 25, 50, 0.9);
-            border: 1px solid rgba(100, 200, 255, 0.2);
-            border-radius: 16px;
-            padding: 40px;
-            width: 420px;
-            box-shadow: 0 0 40px rgba(0, 150, 255, 0.1);
-        }
-        h1 {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 8px;
-            color: #64c8ff;
-        }
-        .subtitle {
-            text-align: center;
-            font-size: 13px;
-            color: #888;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            color: #aaa;
-            margin-bottom: 6px;
-        }
-        input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(100, 200, 255, 0.2);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            border-color: rgba(100, 200, 255, 0.6);
-        }
-        input::placeholder { color: #555; }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #1e88e5, #42a5f5);
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-        .btn:hover {
-            background: linear-gradient(135deg, #1565c0, #1e88e5);
-            box-shadow: 0 4px 20px rgba(30, 136, 229, 0.4);
-        }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .status {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-            display: none;
-        }
-        .status.success {
-            display: block;
-            background: rgba(76, 175, 80, 0.15);
-            border: 1px solid rgba(76, 175, 80, 0.4);
-            color: #81c784;
-        }
-        .status.error {
-            display: block;
-            background: rgba(244, 67, 54, 0.15);
-            border: 1px solid rgba(244, 67, 54, 0.4);
-            color: #e57373;
-        }
-        .status.loading {
-            display: block;
-            background: rgba(255, 193, 7, 0.15);
-            border: 1px solid rgba(255, 193, 7, 0.4);
-            color: #ffd54f;
-        }
-        .data-preview {
-            margin-top: 24px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(100, 200, 255, 0.1);
-            border-radius: 8px;
-        }
-        .data-preview h3 {
-            font-size: 13px;
-            color: #888;
-            margin-bottom: 10px;
-        }
-        .data-preview table {
-            width: 100%;
-            font-size: 12px;
-            border-collapse: collapse;
-        }
-        .data-preview th, .data-preview td {
-            padding: 6px 8px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .data-preview th { color: #64c8ff; font-weight: 500; }
-        .token-section {
-            margin-bottom: 24px;
-            padding: 16px;
-            background: rgba(255, 200, 0, 0.05);
-            border: 1px solid rgba(255, 200, 0, 0.2);
-            border-radius: 8px;
-        }
-        .token-section p {
-            font-size: 12px;
-            color: #888;
-            margin-top: 6px;
-        }
-        .token-saved {
-            color: #81c784;
-            font-size: 13px;
-            text-align: center;
-            padding: 8px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能建造数据管理中心</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1e3e 50%, #0d1230 100%);
+  color: #e0e6ff;
+  min-height: 100vh;
+  padding: 20px;
+}
+.container { max-width: 1000px; margin: 0 auto; }
+
+/* 标题栏 */
+.header {
+  text-align: center;
+  padding: 24px 0 16px;
+  border-bottom: 1px solid rgba(0,200,255,0.15);
+  margin-bottom: 20px;
+}
+.header h1 {
+  font-size: 24px;
+  background: linear-gradient(90deg, #00c8ff, #7b5cff, #00c8ff);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.header .subtitle { font-size: 12px; color: #6b7db3; margin-top: 6px; letter-spacing: 2px; }
+
+/* Token区域 */
+.token-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(0,200,255,0.1);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.token-bar label { color: #7b8cc4; white-space: nowrap; }
+.token-bar input {
+  flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,200,255,0.15);
+  border-radius: 4px; padding: 6px 10px; color: #a0b0e0; font-size: 12px;
+}
+.token-bar .status { font-size: 11px; padding: 3px 8px; border-radius: 10px; }
+.status.ok { background: rgba(0,200,100,0.15); color: #4aeaaa; }
+.status.no { background: rgba(255,100,100,0.15); color: #ff7b7b; }
+
+/* Tab栏 */
+.tabs {
+  display: flex; gap: 2px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px 10px 0 0;
+  padding: 4px 4px 0;
+  margin-bottom: 0;
+}
+.tab {
+  flex: 1; padding: 12px 8px; text-align: center;
+  cursor: pointer; border-radius: 8px 8px 0 0;
+  font-size: 13px; color: #6b7db3;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+.tab:hover { color: #a0b8ff; background: rgba(0,200,255,0.04); }
+.tab.active {
+  color: #00c8ff; background: rgba(0,200,255,0.08);
+  border-color: rgba(0,200,255,0.15);
+}
+.tab .icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+/* 内容区 */
+.panel {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(0,200,255,0.1);
+  border-radius: 0 0 12px 12px;
+  padding: 20px;
+  display: none;
+}
+.panel.active { display: block; }
+.panel h3 {
+  font-size: 15px; color: #00c8ff; margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid rgba(0,200,255,0.08);
+}
+
+/* 表单样式 */
+.form-row {
+  display: flex; gap: 10px; margin-bottom: 10px; align-items: center;
+}
+.form-row label { font-size: 12px; color: #7b8cc4; min-width: 60px; }
+.form-row input, .form-row select {
+  flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,200,255,0.12);
+  border-radius: 6px; padding: 8px 10px; color: #c0d0ff; font-size: 13px;
+}
+.form-row input:focus, .form-row select:focus {
+  outline: none; border-color: rgba(0,200,255,0.4);
+  box-shadow: 0 0 8px rgba(0,200,255,0.1);
+}
+
+/* 数据表格 */
+.data-group { margin-bottom: 16px; }
+.data-group .group-title {
+  font-size: 13px; color: #9ba8d4; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.data-group .group-title::before {
+  content: ''; width: 3px; height: 14px;
+  background: linear-gradient(180deg, #00c8ff, #7b5cff);
+  border-radius: 2px;
+}
+.data-inputs { display: flex; gap: 6px; flex-wrap: wrap; }
+.data-inputs input {
+  width: 80px; background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(0,200,255,0.1); border-radius: 4px;
+  padding: 6px 8px; color: #a0c0ff; font-size: 12px; text-align: center;
+}
+.data-inputs input:focus {
+  outline: none; border-color: rgba(0,200,255,0.4);
+}
+
+/* 传感器卡片 */
+.sensor-card {
+  background: rgba(0,200,255,0.03);
+  border: 1px solid rgba(0,200,255,0.1);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.sensor-card:hover { border-color: rgba(0,200,255,0.25); }
+.sensor-card .card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.sensor-card .sensor-name { font-size: 14px; font-weight: 600; color: #c0d8ff; }
+.sensor-card .sensor-status {
+  font-size: 11px; padding: 3px 10px; border-radius: 10px;
+}
+.sensor-status.normal { background: rgba(0,200,100,0.15); color: #4aeaaa; }
+.sensor-status.warning { background: rgba(255,180,0,0.15); color: #ffc444; }
+.sensor-status.danger { background: rgba(255,80,80,0.15); color: #ff6b6b; }
+.card-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.card-field label { font-size: 11px; color: #6b7db3; display: block; margin-bottom: 3px; }
+.card-field input, .card-field select {
+  width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,200,255,0.1);
+  border-radius: 4px; padding: 6px 8px; color: #b0c0e8; font-size: 12px;
+}
+.card-actions { display: flex; gap: 6px; margin-top: 10px; }
+.card-actions button {
+  padding: 4px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;
+  border: 1px solid rgba(0,200,255,0.15); background: rgba(0,200,255,0.05);
+  color: #7bb8e0; transition: all 0.2s;
+}
+.card-actions button:hover { background: rgba(0,200,255,0.12); }
+.card-actions button.del { border-color: rgba(255,80,80,0.2); color: #ff8888; }
+.card-actions button.del:hover { background: rgba(255,80,80,0.1); }
+
+/* 按钮 */
+.btn {
+  padding: 10px 24px; border-radius: 8px; font-size: 13px;
+  cursor: pointer; border: none; transition: all 0.2s;
+  font-weight: 600;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #0066cc, #00aaff);
+  color: #fff; box-shadow: 0 2px 12px rgba(0,150,255,0.2);
+}
+.btn-primary:hover { box-shadow: 0 4px 20px rgba(0,150,255,0.35); transform: translateY(-1px); }
+.btn-secondary {
+  background: rgba(0,200,255,0.08); border: 1px solid rgba(0,200,255,0.2);
+  color: #80c0ff;
+}
+.btn-secondary:hover { background: rgba(0,200,255,0.15); }
+.btn-group { display: flex; gap: 10px; margin-top: 16px; }
+
+/* 预览表格 */
+.preview-table {
+  width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px;
+}
+.preview-table th {
+  background: rgba(0,200,255,0.08); color: #7bb8e0;
+  padding: 8px 10px; text-align: left; font-weight: 500;
+  border-bottom: 1px solid rgba(0,200,255,0.1);
+}
+.preview-table td {
+  padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: #a0b8e0;
+}
+.preview-table tr:hover td { background: rgba(0,200,255,0.03); }
+
+/* 提示 */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  padding: 10px 24px; border-radius: 8px; font-size: 13px;
+  z-index: 1000; opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.toast.success { background: rgba(0,200,100,0.9); color: #fff; }
+.toast.error { background: rgba(255,60,60,0.9); color: #fff; }
+.toast.info { background: rgba(0,150,255,0.9); color: #fff; }
+
+/* URL展示 */
+.url-box {
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(0,200,255,0.1);
+  border-radius: 6px; padding: 8px 12px; margin-top: 10px;
+  font-size: 11px; color: #6b98c4; word-break: break-all;
+}
+.url-box .url-label { color: #5578a0; font-size: 10px; margin-bottom: 2px; }
+.url-box .url-value { color: #4ac0ff; }
+
+.add-btn {
+  width: 100%; padding: 10px; border-radius: 8px;
+  border: 1px dashed rgba(0,200,255,0.2);
+  background: rgba(0,200,255,0.02);
+  color: #5590c0; font-size: 13px; cursor: pointer;
+  transition: all 0.2s; margin-top: 6px;
+}
+.add-btn:hover { background: rgba(0,200,255,0.06); border-color: rgba(0,200,255,0.35); color: #80c8ff; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 应力波数据管理</h1>
-        <p class="subtitle">填写检测数据 → 自动更新大屏展示</p>
+<div class="container">
+  <div class="header">
+    <h1>🔮 智能建造数据管理中心</h1>
+    <div class="subtitle">SMART BUILDING DATA MANAGEMENT CENTER</div>
+  </div>
 
-        <!-- Token 配置区 -->
-        <div class="token-section" id="tokenSection">
-            <label>🔑 GitHub Token（首次使用需填写）</label>
-            <input type="password" id="tokenInput" placeholder="粘贴你的 ghp_ 开头的 Token">
-            <button class="btn" style="background:linear-gradient(135deg,#f9a825,#ffb300);margin-top:10px" onclick="saveToken()">保存 Token</button>
-            <p>Token 仅保存在你的浏览器本地，不会上传到任何地方</p>
-        </div>
-        <div class="token-saved" id="tokenSaved" style="display:none">
-            ✅ Token 已保存 | <a href="#" onclick="resetToken()" style="color:#e57373;font-size:12px">更换</a>
-        </div>
+  <div class="token-bar">
+    <label>GitHub Token:</label>
+    <input type="password" id="tokenInput" placeholder="首次使用请输入 GitHub Token">
+    <button class="btn btn-secondary" onclick="saveToken()" style="padding:6px 14px;font-size:12px;">保存</button>
+    <span id="tokenStatus" class="status no">未配置</span>
+  </div>
 
-        <div class="form-group">
-            <label>检测时间</label>
-            <input type="text" id="timePoint" placeholder="如：2026.8">
-        </div>
-        <div class="form-group">
-            <label>应力波速 (km/s)</label>
-            <input type="number" id="waveSpeed" placeholder="如：4.1" step="0.001">
-        </div>
-        <div class="form-group">
-            <label>含水率 (%)</label>
-            <input type="number" id="moisture" placeholder="如：15.2" step="0.1">
-        </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(0)"><span class="icon">📊</span>应力波数据</div>
+    <div class="tab" onclick="switchTab(1)"><span class="icon">📡</span>烟雾传感器</div>
+    <div class="tab" onclick="switchTab(2)"><span class="icon">📈</span>实时数据</div>
+  </div>
 
-        <button class="btn" id="submitBtn" onclick="submitData()">提交并更新大屏</button>
-
-        <div class="status" id="status"></div>
-
-        <div class="data-preview" id="preview">
-            <h3>当前数据预览</h3>
-            <div id="previewContent">加载中...</div>
-        </div>
+  <!-- Tab 0: 应力波数据 -->
+  <div class="panel active" id="panel0">
+    <h3>应力波速与含水率监测数据</h3>
+    <div class="data-group">
+      <div class="group-title">时间轴 (xAxisData)</div>
+      <div class="data-inputs" id="xAxisInputs"></div>
     </div>
+    <div class="data-group">
+      <div class="group-title">应力波速 (km/s)</div>
+      <div class="data-inputs" id="waveInputs"></div>
+    </div>
+    <div class="data-group">
+      <div class="group-title">含水率 (%)</div>
+      <div class="data-inputs" id="moistureInputs"></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="saveStressWave()">💾 保存数据</button>
+      <button class="btn btn-secondary" onclick="loadStressWave()">🔄 重新加载</button>
+    </div>
+    <div class="url-box">
+      <div class="url-label">📎 接口地址（粘贴到低代码平台）</div>
+      <div class="url-value">https://savedemon.github.io/smart-building-data/data.json</div>
+    </div>
+  </div>
 
-    <script>
-        const OWNER = 'SaveDemon';
-        const REPO = 'smart-building-data';
-        const FILE_PATH = 'data.json';
-        const API_URL = 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents/' + FILE_PATH;
+  <!-- Tab 1: 烟雾传感器 -->
+  <div class="panel" id="panel1">
+    <h3>烟雾传感器设备管理</h3>
+    <div id="sensorCards"></div>
+    <button class="add-btn" onclick="addSensor()">+ 添加新传感器</button>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="saveSensors()">💾 保存设备信息</button>
+      <button class="btn btn-secondary" onclick="loadSensors()">🔄 重新加载</button>
+    </div>
+  </div>
 
-        // Token 管理
-        function getToken() {
-            return localStorage.getItem('github_token');
-        }
+  <!-- Tab 2: 实时数据 -->
+  <div class="panel" id="panel2">
+    <h3>传感器实时监测数据</h3>
+    <div class="data-group">
+      <div class="group-title">监测点位 (xAxisData)</div>
+      <div class="data-inputs" id="smokeXInputs"></div>
+    </div>
+    <div class="data-group">
+      <div class="group-title">烟雾浓度 (mg/m³)</div>
+      <div class="data-inputs" id="smokeConcInputs"></div>
+    </div>
+    <div class="data-group">
+      <div class="group-title">温度 (°C)</div>
+      <div class="data-inputs" id="smokeTempInputs"></div>
+    </div>
+    <div class="data-group">
+      <div class="group-title">湿度 (%)</div>
+      <div class="data-inputs" id="smokeHumInputs"></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="saveSmokeData()">💾 保存实时数据</button>
+      <button class="btn btn-secondary" onclick="loadSmokeData()">🔄 重新加载</button>
+    </div>
+    <div class="url-box">
+      <div class="url-label">📎 接口地址（粘贴到低代码平台温度/湿度图表）</div>
+      <div class="url-value">https://savedemon.github.io/smart-building-data/sensors.json</div>
+    </div>
+    <h3 style="margin-top:20px;">传感器状态总览</h3>
+    <table class="preview-table" id="sensorPreview">
+      <thead><tr><th>传感器</th><th>SN</th><th>MAC</th><th>位置</th><th>状态</th><th>最后上报</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
-        function saveToken() {
-            var token = document.getElementById('tokenInput').value.trim();
-            if (token && token.indexOf('ghp_') === 0) {
-                localStorage.setItem('github_token', token);
-                showTokenSaved();
-            } else {
-                alert('请输入有效的 GitHub Token（以 ghp_ 开头）');
-            }
-        }
+<div class="toast" id="toast"></div>
 
-        function resetToken() {
-            localStorage.removeItem('github_token');
-            document.getElementById('tokenSection').style.display = 'block';
-            document.getElementById('tokenSaved').style.display = 'none';
-        }
+<script>
+const REPO = 'SaveDemon/smart-building-data';
+const API = 'https://api.github.com/repos/' + REPO + '/contents/';
 
-        function showTokenSaved() {
-            document.getElementById('tokenSection').style.display = 'none';
-            document.getElementById('tokenSaved').style.display = 'block';
-        }
+function utf8Decode(str) {
+  try {
+    return decodeURIComponent(escape(atob(str)));
+  } catch(e) {
+    return atob(str);
+  }
+}
 
-        // 页面加载检查
-        if (getToken()) {
-            showTokenSaved();
-        }
+function getToken() {
+  return localStorage.getItem('gh_token') || '';
+}
 
-        // UTF-8 安全的 base64 解码
-        function utf8Decode(base64Str) {
-            var raw = atob(base64Str);
-            var bytes = [];
-            for (var i = 0; i < raw.length; i++) {
-                bytes.push(raw.charCodeAt(i));
-            }
-            return decodeURIComponent(escape(String.fromCharCode.apply(null, bytes)));
-        }
+function saveToken() {
+  const v = document.getElementById('tokenInput').value.trim();
+  if (v) {
+    localStorage.setItem('gh_token', v);
+    updateTokenStatus();
+    showToast('Token 已保存', 'success');
+  }
+}
 
-        // 加载当前数据预览
-        fetch(API_URL).then(function(res) {
-            return res.json();
-        }).then(function(data) {
-            var jsonStr = utf8Decode(data.content);
-            var content = JSON.parse(jsonStr);
+function updateTokenStatus() {
+  const s = document.getElementById('tokenStatus');
+  if (getToken()) {
+    s.textContent = '已配置';
+    s.className = 'status ok';
+  } else {
+    s.textContent = '未配置';
+    s.className = 'status no';
+  }
+}
 
-            var html = '<table><tr><th></th>';
-            for (var i = 0; i < content.xAxisData.length; i++) {
-                html += '<th>' + content.xAxisData[i] + '</th>';
-            }
-            html += '</tr>';
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 2500);
+}
 
-            for (var s = 0; s < content.chartData.length; s++) {
-                var series = content.chartData[s];
-                html += '<tr><td style="color:#aaa;text-align:left">' + series.name + '</td>';
-                for (var d = 0; d < series.data.length; d++) {
-                    html += '<td>' + series.data[d] + '</td>';
-                }
-                html += '</tr>';
-            }
-            html += '</table>';
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  if (idx === 1) loadSensors();
+  if (idx === 2) { loadSmokeData(); updateSensorPreview(); }
+}
 
-            document.getElementById('previewContent').innerHTML = html;
-        }).catch(function(e) {
-            document.getElementById('previewContent').textContent = '加载失败';
-        });
+// ========== GitHub API ==========
+async function getFile(filename) {
+  const resp = await fetch(API + filename, {
+    headers: { 'Authorization': 'token ' + getToken() }
+  });
+  if (!resp.ok) throw new Error('获取文件失败: ' + filename);
+  const data = await resp.json();
+  return { content: JSON.parse(utf8Decode(data.content)), sha: data.sha };
+}
 
-        // 提交新数据
-        function submitData() {
-            var token = getToken();
-            if (!token) {
-                resetToken();
-                alert('请先填写 GitHub Token');
-                return;
-            }
+async function putFile(filename, content, sha, message) {
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+  const body = { message, content: b64 };
+  if (sha) body.sha = sha;
+  const resp = await fetch(API + filename, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token ' + getToken(),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error('保存失败: ' + (err.message || '未知错误'));
+  }
+  return await resp.json();
+}
 
-            var timePoint = document.getElementById('timePoint').value.trim();
-            var waveSpeed = parseFloat(document.getElementById('waveSpeed').value);
-            var moisture = parseFloat(document.getElementById('moisture').value);
-            var statusEl = document.getElementById('status');
-            var btn = document.getElementById('submitBtn');
+// ========== Tab 0: 应力波 ==========
+function renderStressWaveInputs(data) {
+  const xC = document.getElementById('xAxisInputs');
+  const wC = document.getElementById('waveInputs');
+  const mC = document.getElementById('moistureInputs');
+  xC.innerHTML = ''; wC.innerHTML = ''; mC.innerHTML = '';
+  data.xAxisData.forEach((v, i) => {
+    xC.innerHTML += '<input value="'+v+'" data-idx="'+i+'" data-type="x" onchange="updateXAxis(this)">';
+  });
+  data.chartData[0].data.forEach((v, i) => {
+    wC.innerHTML += '<input type="number" step="0.001" value="'+v+'" data-idx="'+i+'" onchange="updateWave(this)">';
+  });
+  data.chartData[1].data.forEach((v, i) => {
+    mC.innerHTML += '<input type="number" step="0.1" value="'+v+'" data-idx="'+i+'" onchange="updateMoisture(this)">';
+  });
+}
 
-            if (!timePoint || isNaN(waveSpeed) || isNaN(moisture)) {
-                statusEl.className = 'status error';
-                statusEl.textContent = '❌ 请填写完整信息';
-                return;
-            }
+let stressWaveData = null;
+async function loadStressWave() {
+  if (!getToken()) { showToast('请先配置 Token', 'error'); return; }
+  try {
+    const r = await getFile('data.json');
+    stressWaveData = r.content;
+    renderStressWaveInputs(stressWaveData);
+    showToast('应力波数据已加载', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
 
-            btn.disabled = true;
-            statusEl.className = 'status loading';
-            statusEl.textContent = '⏳ 正在读取并更新数据...';
+function updateXAxis(el) { if(stressWaveData) stressWaveData.xAxisData[el.dataset.idx] = el.value; }
+function updateWave(el) { if(stressWaveData) stressWaveData.chartData[0].data[el.dataset.idx] = parseFloat(el.value); }
+function updateMoisture(el) { if(stressWaveData) stressWaveData.chartData[1].data[el.dataset.idx] = parseFloat(el.value); }
 
-            fetch(API_URL).then(function(res) {
-                return res.json();
-            }).then(function(fileInfo) {
-                var jsonStr = utf8Decode(fileInfo.content);
-                var currentContent = JSON.parse(jsonStr);
-                var sha = fileInfo.sha;
+async function saveStressWave() {
+  if (!getToken()) { showToast('请先配置 Token', 'error'); return; }
+  if (!stressWaveData) { showToast('请先加载数据', 'error'); return; }
+  try {
+    const current = await getFile('data.json');
+    await putFile('data.json', stressWaveData, current.sha, '更新应力波监测数据');
+    showToast('应力波数据已保存 ✓', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
 
-                currentContent.xAxisData.push(timePoint);
-                currentContent.chartData[0].data.push(waveSpeed);
-                currentContent.chartData[1].data.push(moisture);
+// ========== Tab 1: 烟雾传感器 ==========
+let sensorList = [];
+let sensorsFileSha = null;
 
-                var newJson = JSON.stringify(currentContent, null, 2);
-                var newContent = btoa(unescape(encodeURIComponent(newJson)));
+async function loadSensors() {
+  if (!getToken()) { showToast('请先配置 Token', 'error'); return; }
+  try {
+    const r = await getFile('sensors.json');
+    sensorsFileSha = r.sha;
+    sensorList = r.content.sensors || [];
+    // 也保存chart数据到全局
+    window.sensorsJsonContent = r.content;
+    renderSensorCards();
+    showToast('传感器数据已加载', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
 
-                return fetch(API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'token ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: '更新检测数据: ' + timePoint,
-                        content: newContent,
-                        sha: sha
-                    })
-                });
-            }).then(function(updateRes) {
-                if (updateRes.ok) {
-                    statusEl.className = 'status success';
-                    statusEl.textContent = '✅ 更新成功！大屏将在几秒内刷新';
-                    document.getElementById('timePoint').value = '';
-                    document.getElementById('waveSpeed').value = '';
-                    document.getElementById('moisture').value = '';
-                    setTimeout(function() { location.reload(); }, 2000);
-                } else {
-                    return updateRes.json().then(function(err) {
-                        throw new Error(err.message || '未知错误');
-                    });
-                }
-            }).catch(function(e) {
-                statusEl.className = 'status error';
-                statusEl.textContent = '❌ 错误: ' + e.message;
-            }).finally(function() {
-                btn.disabled = false;
-            });
-        }
-    </script>
+function renderSensorCards() {
+  const c = document.getElementById('sensorCards');
+  c.innerHTML = '';
+  sensorList.forEach((s, i) => {
+    const statusClass = s.status === '正常' ? 'normal' : (s.status === '预警' ? 'warning' : 'danger');
+    c.innerHTML += `
+    <div class="sensor-card" data-idx="${i}">
+      <div class="card-header">
+        <span class="sensor-name">📡 传感器 #${i+1} — ${s.location}</span>
+        <span class="sensor-status ${statusClass}">${s.status}</span>
+      </div>
+      <div class="card-fields">
+        <div class="card-field"><label>设备编号 (SN)</label><input value="${s.id}" onchange="updateSensorField(${i},'id',this.value)"></div>
+        <div class="card-field"><label>MAC 地址</label><input value="${s.mac}" onchange="updateSensorField(${i},'mac',this.value)"></div>
+        <div class="card-field"><label>安装位置</label><input value="${s.location}" onchange="updateSensorField(${i},'location',this.value)"></div>
+        <div class="card-field"><label>高度 (m)</label><input type="number" value="${s.height}" onchange="updateSensorField(${i},'height',parseFloat(this.value))"></div>
+        <div class="card-field"><label>设备状态</label>
+          <select onchange="updateSensorField(${i},'status',this.value)">
+            <option ${s.status==='正常'?'selected':''}>正常</option>
+            <option ${s.status==='预警'?'selected':''}>预警</option>
+            <option ${s.status==='故障'?'selected':''}>故障</option>
+          </select>
+        </div>
+        <div class="card-field"><label>最后上报</label><input value="${s.last_report}" onchange="updateSensorField(${i},'last_report',this.value)"></div>
+      </div>
+      <div class="card-actions">
+        <button class="del" onclick="removeSensor(${i})">🗑 删除</button>
+      </div>
+    </div>`;
+  });
+}
+
+function updateSensorField(idx, field, value) {
+  if (sensorList[idx]) sensorList[idx][field] = value;
+  if (field === 'location' || field === 'height') renderSensorCards();
+}
+
+function addSensor() {
+  sensorList.push({
+    id: 'VESDA-SM-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(sensorList.length+1).padStart(3,'0'),
+    mac: 'A4:CF:12:D8:5E:' + String(sensorList.length+1).padStart(2,'0'),
+    location: '新楼层',
+    height: 0,
+    status: '正常',
+    last_report: new Date().toISOString().slice(0,16).replace('T',' ')
+  });
+  renderSensorCards();
+}
+
+function removeSensor(idx) {
+  sensorList.splice(idx, 1);
+  renderSensorCards();
+}
+
+async function saveSensors() {
+  if (!getToken()) { showToast('请先配置 Token', 'error'); return; }
+  try {
+    const current = await getFile('sensors.json');
+    const content = current.content;
+    content.sensors = sensorList;
+    await putFile('sensors.json', content, current.sha, '更新烟雾传感器设备信息');
+    showToast('传感器信息已保存 ✓', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ========== Tab 2: 实时数据 ==========
+let smokeData = null;
+
+function renderSmokeInputs(data) {
+  const xC = document.getElementById('smokeXInputs');
+  const cC = document.getElementById('smokeConcInputs');
+  const tC = document.getElementById('smokeTempInputs');
+  const hC = document.getElementById('smokeHumInputs');
+  xC.innerHTML = ''; cC.innerHTML = ''; tC.innerHTML = ''; hC.innerHTML = '';
+  data.xAxisData.forEach((v, i) => {
+    xC.innerHTML += '<input value="'+v+'" onchange="smokeData.xAxisData['+i+']=this.value">';
+  });
+  data.chartData[0].data.forEach((v, i) => {
+    cC.innerHTML += '<input type="number" step="0.01" value="'+v+'" onchange="smokeData.chartData[0].data['+i+']=parseFloat(this.value)">';
+  });
+  data.chartData[1].data.forEach((v, i) => {
+    tC.innerHTML += '<input type="number" step="0.1" value="'+v+'" onchange="smokeData.chartData[1].data['+i+']=parseFloat(this.value)">';
+  });
+  data.chartData[2].data.forEach((v, i) => {
+    hC.innerHTML += '<input type="number" step="0.1" value="'+v+'" onchange="smokeData.chartData[2].data['+i+']=parseFloat(this.value)">';
+  });
+}
+
+async function loadSmokeData() {
+  if (!getToken()) { showToast('请先配置 Token', 'error'); return; }
+  try {
+    const r = await getFile('sensors.json');
+    smokeData = r.content;
+    renderSmokeInputs(smokeData);
+    updateSensorPreview();
+    showToast('实时数据已加载', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function saveSmokeData() {
+  if (!getToken()) { showToast('请先配置 Token', 'error'); return; }
+  if (!smokeData) { showToast('请先加载数据', 'error'); return; }
+  try {
+    const current = await getFile('sensors.json');
+    const content = current.content;
+    content.xAxisData = smokeData.xAxisData;
+    content.chartData = smokeData.chartData;
+    await putFile('sensors.json', content, current.sha, '更新传感器实时监测数据');
+    showToast('实时数据已保存 ✓', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function updateSensorPreview() {
+  const tbody = document.querySelector('#sensorPreview tbody');
+  if (!smokeData || !smokeData.sensors) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#556;">暂无数据</td></tr>'; return; }
+  tbody.innerHTML = '';
+  smokeData.sensors.forEach((s, i) => {
+    const statusClass = s.status === '正常' ? 'normal' : (s.status === '预警' ? 'warning' : 'danger');
+    tbody.innerHTML += `<tr>
+      <td>#${i+1}</td>
+      <td style="font-size:10px;color:#6888bb;">${s.id}</td>
+      <td style="font-size:10px;color:#6888bb;">${s.mac}</td>
+      <td>${s.location}</td>
+      <td><span class="sensor-status ${statusClass}" style="font-size:10px;">${s.status}</span></td>
+      <td style="font-size:11px;">${s.last_report}</td>
+    </tr>`;
+  });
+}
+
+// ========== 初始化 ==========
+window.addEventListener('DOMContentLoaded', () => {
+  const savedToken = getToken();
+  if (savedToken) {
+    document.getElementById('tokenInput').value = savedToken;
+  }
+  updateTokenStatus();
+  // 自动加载应力波数据
+  if (savedToken) loadStressWave();
+});
+</script>
 </body>
 </html>
